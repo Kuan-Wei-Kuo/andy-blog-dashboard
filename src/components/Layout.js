@@ -22,6 +22,8 @@ import { makeStyles, useTheme, withStyles } from '@material-ui/core/styles';
 
 import { withContext } from '../contexts/AppContext';
 import Posts from './Posts';
+import PostEditor from './PostEditor';
+import Profile from './Profile'; 
 
 const drawerWidth = 240;
 
@@ -54,7 +56,6 @@ const useStyles = makeStyles((theme) => ({
   },
   content: {
     flexGrow: 1,
-    padding: theme.spacing(3),
   },
 }));
 
@@ -145,6 +146,8 @@ function Layout(props) {
         <div className={classes.toolbar} />
         <Switch>
           <Route exact path="/posts" component={Posts}></Route>
+          <Route exact path="/post-editor" component={PostEditor}></Route>
+          <Route exact path="/profile" component={Profile}></Route>
         </Switch>
       </main>
     </div>
