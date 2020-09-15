@@ -56,7 +56,7 @@ const useStyles = makeStyles((theme) => ({
     width: drawerWidth,
   },
   content: {
-    flexGrow: 1,
+    flexGrow: 1
   },
 }));
 
@@ -108,7 +108,7 @@ function Layout(props) {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap>
-            Hello Andy
+            Write Somthing !
           </Typography>
         </Toolbar>
       </AppBar>

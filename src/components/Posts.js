@@ -2,27 +2,12 @@ import React from 'react';
 import { withRouter } from 'react-router-dom';
 import { withContext } from '../contexts/AppContext';
 
-import axios from 'axios';
-
 import {
 	Chip,
 	Fab,
-	Link,
-	List,
-	ListItem,
-	ListItemText,
-	ListItemIcon,
-	ListItemSecondaryAction,
 	MenuItem,
 	Select,
 	Typography,
-	Switch,
-	Popper,
-	Grow,
-	Paper,
-	ClickAwayListener,
-	MenuList,
-	Divider,
 	IconButton,
 	Button,
 	Dialog,
@@ -33,15 +18,14 @@ import {
 	Slide,
 	withStyles,
 	Container,
-	Box
+	Box, Card
 } from '@material-ui/core';
 
 import {
-	Bookmark as BookmarkIcon,
 	Add as AddIcon,
-	MoreVert as MoreVertIcon,
 	Delete as DeleteIcon,
-	Public as PublicIcon
+	Public as PublicIcon,
+	BarChart
 } from '@material-ui/icons';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -54,23 +38,50 @@ const useStyles = theme => ({
 		paddingBottom: theme.spacing(6)
 	},
 	actionBar: {
-		marginTop: theme.spacing(4)
+		marginTop: theme.spacing(4),
+		marginBottom: theme.spacing(4)
+	},
+	select: {
+		padding: theme.spacing(2)
 	},
 	chip: {
 		marginRight: theme.spacing(1),
-		cursor: 'pointer'
+		'&:hover': {
+			cursor: 'pointer'
+		}
 	},
 	fab: {
 		position: 'fixed',
 		bottom: '5%',
 		right: '2%'
 	},
-	listItemContent: {
+	postCard: {
+		marginBottom: theme.spacing(1),
+		padding: theme.spacing(2),
+		'&:hover': {
+			cursor: 'pointer',
+			boxShadow: '0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12)'
+		}
+	},
+	postCardHeader: {
 		display: 'flex',
 		alignItems: 'center',
-		'& span': {
-			flex: '1 1'
-		}
+		paddingBottom: theme.spacing(1)
+	},
+	postCardContent: {
+		display: 'flex',
+		alignItems: 'center'
+	},
+	postCardTitle: {
+		flex: 'auto',
+		whiteSpace: 'nowrap',
+		overflow: 'hidden',
+		textOverflow: 'ellipsis'
+	},
+	postCardActions: {
+		display: 'flex',
+		flex: '0 0 auto',
+		alignItems: 'center'
 	}
 });
 
@@ -82,8 +93,7 @@ class Posts extends React.Component {
 			posts: [],
 			filterChecked: 'ALL',
 			deleteOpen: false,
-			menuAnchorEl: null,
-			menuPost: null
+			editedItem: null
 		}
 	}
 
@@ -101,7 +111,7 @@ class Posts extends React.Component {
 		});
 	}
 
-	handleListItemClick = (event, id) => {
+	handlePostCardClick = (event, id) => {
 		this.props.history.push('/post-editor/' + id);
 	}
 
@@ -121,48 +131,26 @@ class Posts extends React.Component {
 		this.setState({ filterChecked: e.target.value })
 	}
 
-	handleMenuKeyDown = (event) => {
-		if (event.key === 'Tab') {
-			event.preventDefault();
-			this.setState({ menuAnchorEl: null });
-		}
-	}
-
-	handleMenuOpen = (event, post) => {
-		event.preventDefault();
-		this.setState({
-			menuAnchorEl: event.currentTarget,
-			menuPost: post
-		});
-	}
-
-	handleMenuClose = (event) => {
-		this.setState({
-			menuAnchorEl: null,
-			menuPost: null
-		});
-	}
-
-	handleDeleteOpen = () => {
+	handleDelete = (item) => {
 		this.setState({
 			deleteOpen: true,
-			menuAnchorEl: null
+			editedItem: item
 		});
 	}
 
 	handleDeleteClose = () => {
-		this.setState({ deleteOpen: false });
+		this.setState({ deleteOpen: false, editedItem: null });
 	}
 
 	handleDeleteEnter = () => {
-		let { posts, menuPost } = this.state;
-		if (menuPost) {
-			this.props.deletePost(menuPost.id).then(response => {
+		let { posts, editedItem } = this.state;
+		if (editedItem) {
+			this.props.deletePost(editedItem.id).then(response => {
 				for (let i in posts) {
 					let post = posts[i];
-					if (post.id === menuPost.id) {
+					if (post.id === editedItem.id) {
 						posts.splice(i, 1);
-						this.setState({ menuPost: null, deleteOpen: false });
+						this.setState({ editedItem: null, deleteOpen: false });
 						return;
 					}
 				}
@@ -174,8 +162,18 @@ class Posts extends React.Component {
 
 	render() {
 		const { classes } = this.props;
-		const { posts, filterChecked, deleteOpen, menuAnchorEl, menuPost } = this.state;
-		const menuOpen = Boolean(menuAnchorEl);
+		const { posts, filterChecked, deleteOpen, editedItem } = this.state;
+		
+		const filterPosts = [];
+		for(const post of posts) {
+			if(filterChecked === 'PUBLISH' && post.publish)
+				filterPosts.push(post);
+			else if(filterChecked === 'NOT-PUBLISH' && !post.publish)
+				filterPosts.push(post);
+			else if(filterChecked === 'ALL')
+				filterPosts.push(post);
+		}
+
 		return (
 			<div className={classes.root}>
 				<Container maxWidth="lg">
@@ -193,108 +191,48 @@ class Posts extends React.Component {
 							onChange={this.handleFilterToggle}
 							disableUnderline
 						>
-							<MenuItem value={'ALL'}>不限發布</MenuItem>
+							<MenuItem value={'ALL'}>全部</MenuItem>
 							<MenuItem value={'PUBLISH'}>已發布</MenuItem>
 							<MenuItem value={'NOT-PUBLISH'}>尚未發布</MenuItem>
 						</Select>
 					</Box>
-					<List component="nav" >
-						{posts.map((row, index) => {
-							if (filterChecked === 'PUBLISH' && row.publish === false)
-								return;
-							else if (filterChecked === 'NOT-PUBLISH' && row.publish === true)
-								return;
+					<div>
+						{filterPosts.map((row, index) => {
 							return (
-								<React.Fragment key={'list-fragment-' + index}>
-									<ListItem key={row.id} onClick={(event) => { this.handleListItemClick(event, row.id) }} button>
-										<ListItemIcon>
-											{row.publish ? <PublicIcon color="primary" /> : <PublicIcon color="disabled" />}
-										</ListItemIcon>
-										<ListItemText
-											primary={
-												<React.Fragment>
-													<div className={classes.listItemContent}>
-														<Typography
-															component="span"
-															color="textPrimary"
-														>
-															{row.title}
-														</Typography>
-														<span>
-															{row.categories.map(category => {
-																return <Chip color="primary" key={row.id + '-' + category} label={category} className={classes.chip} icon={<BookmarkIcon />} size="small" />;
-															})}
-														</span>
-														<Typography
-															component="span"
-															color="textPrimary"
-														>
-															{row.createTime}
-														</Typography>
-													</div>
-												</React.Fragment>
-											}
-										/>
-										<ListItemSecondaryAction>
-											<IconButton
-												aria-controls={menuOpen ? 'menu-list-grow' : undefined}
-												aria-haspopup="true"
-												onClick={(event) => {
-													this.handleMenuOpen(event, row);
-												}}
-											>
-												<MoreVertIcon id="menu-btn" />
+								<Card key={'post-card-' + index} className={classes.postCard} variant="outlined">
+									<div className={classes.postCardHeader}>
+										<Typography className={classes.postCardTitle} variant="h5" onClick={this.handlePostCardClick}>{row.title}</Typography>
+										<div className={classes.postCardActions}>
+											<IconButton size="small">
+												<PublicIcon />
 											</IconButton>
-										</ListItemSecondaryAction>
-									</ListItem>
-									{index !== posts.length - 1 && (
-										<Divider key={'list-divider-' + index} light />
-									)}
-								</React.Fragment>
-							);
+											<IconButton size="small" onClick={(e) => { this.handleDelete(row)}}>
+												<DeleteIcon />
+											</IconButton>
+										</div>
+									</div>
+									<div className={classes.postCardContent} onClick={this.handlePostCardClick}>
+										<Typography className={classes.postCardTitle} variant="subtitle2">
+											{row.publish ? '已發布' : '尚未發布'}。
+											{row.categories.map(category => {
+												return (
+													<Chip
+														key={row.id + '-' + category}
+														className={classes.chip}
+														label={category}
+														variant="outlined" />
+												);
+											})}
+										</Typography>
+										<div className={classes.postCardActions}>
+											123
+											<BarChart fontSize="small" />
+										</div>
+									</div>
+								</Card>
+							)
 						})}
-					</List>
-					<Popper
-						open={menuOpen}
-						anchorEl={menuAnchorEl}
-						role={undefined}
-						transition
-						disablePortal
-					>
-						{({ TransitionProps, placement }) => (
-							<Grow
-								{...TransitionProps}
-								style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}
-							>
-								<Paper>
-									<ClickAwayListener onClickAway={this.handleMenuClose}>
-										<MenuList autoFocusItem={menuOpen} id="menu-list-grow" onKeyDown={this.handleMenuKeyDown} className={classes.mg}>
-											<MenuItem onClick={this.handleDeleteOpen}>
-												<ListItemIcon>
-													<DeleteIcon />
-												</ListItemIcon>
-												<Typography variant="inherit" noWrap>
-													Delete
-                                            </Typography>
-											</MenuItem>
-											<MenuItem onClick={this.handleMenuClose}>
-												<ListItemIcon>
-													<PublicIcon />
-												</ListItemIcon>
-												<Typography variant="inherit" noWrap>
-													Publish ?
-                                            </Typography>
-												<Switch
-													size="small"
-													edge="end"
-												/>
-											</MenuItem>
-										</MenuList>
-									</ClickAwayListener>
-								</Paper>
-							</Grow>
-						)}
-					</Popper>
+					</div>
 					<Dialog
 						open={deleteOpen}
 						TransitionComponent={Transition}
@@ -303,7 +241,7 @@ class Posts extends React.Component {
 						aria-labelledby="alert-dialog-slide-title"
 						aria-describedby="alert-dialog-slide-description"
 					>
-						<DialogTitle id="alert-dialog-slide-title">{'請問要刪除 "' + (menuPost ? menuPost.title : '') + '" 嗎 ?'}</DialogTitle>
+						<DialogTitle id="alert-dialog-slide-title">{'請問要刪除 "' + (editedItem ? editedItem.title : '') + '" 嗎 ?'}</DialogTitle>
 						<DialogContent>
 							<DialogContentText id="alert-dialog-slide-description">
 								我們將無法復原刪除的文章，您確定要刪除嗎 ?

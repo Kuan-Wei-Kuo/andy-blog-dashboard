@@ -10,28 +10,6 @@ import Layout from './components/Layout';
 import AuthRoute from './components/AuthRoute';
 
 const THEME = createMuiTheme({
-  palette: {
-    primary: {
-      light: '#67daff',
-      main: '#03a9f4',
-      dark: '#007ac1',
-      contrastText: '#fff',
-    },
-    secondary: {
-      light: '#fff350',
-      main: '#FFC107',
-      dark: '#c79100',
-      contrastText: '#fff',
-    },
-    text: {
-      primary: '#212121',
-      secondary: '#757575',
-    },
-    background: {
-      paper: '#fff',
-      default: '#fafafa'
-    }
-  },
   typography: {
     "fontFamily": "Roboto, Helvetica, Microsoft JhengHei",
   },
