@@ -7,9 +7,8 @@ const authAxios = axios.create();
 authAxios.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token');
-    const tokenType = localStorage.getItem('token_type');
     if (token)
-      config.headers.Authorization = tokenType + ' ' + token;
+      config.headers.Authorization = 'Bearer ' + token;
     return config;
   },
   error => {
@@ -38,60 +37,43 @@ class AppContextProvider extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      rootPath: 'http://localhost:8080/personal.blog/dashboard/api',
+      rootPath: 'http://localhost:8080/andy.blog',
       token: localStorage.getItem('token') || '',
       articles: []
     }
   }
 
-  handleError() {
+  handleError = () => {
     this.props.history.push('/login');
   }
 
-  getArticles = () => {
-    return authAxios.get(this.state.rootPath + '/articles').then(response => {
-      if (response.data.code == 200)
-        this.setState({ articles: response.data.data });
-      return response;
-    }).catch(this.handleError);
+  getPosts = () => {
+    return authAxios.get(this.state.rootPath + '/private/api/posts');
   }
 
-  getArticleById = id => {
-    return authAxios.get(this.state.rootPath + '/articles/' + id).then(response => {
-      return response;
-    }).catch(this.handleError);
+  getPostById = id => {
+    return authAxios.get(this.state.rootPath + '/private/api/posts/' + id);
   }
 
-  addArticle = data => {
-    return authAxios.post(this.state.rootPath + '/articles', data).then(response => {
-      if (response.data.code == 200)
-        this.props.history.push('/articles');
-      return response;
-    }).catch(this.handleError);
+  addPost = data => {
+    return authAxios.post(this.state.rootPath + '/private/api/posts', data);
   }
 
-  editArticle = (id, data) => {
-    return authAxios.put(this.state.rootPath + '/articles/' + id, data).then(response => {
-      if (response.data.code == 200)
-        this.props.history.push('/articles');
-      return response;
-    }).catch(this.handleError);
+  updatePost = (id, data) => {
+    return authAxios.put(this.state.rootPath + '/private/api/posts/' + id, data);
   }
 
-  deleteArticle = id => {
-    return authAxios.delete(this.state.rootPath + '/articles/' + id).then(response => {
-      return response;
-    }).catch(this.handleError);
+  deletePost = id => {
+    return authAxios.delete(this.state.rootPath + '/private/api/posts/' + id);
   }
 
   login = credentials => {
-    return authAxios.post('http://localhost:8080/andy.blog/login', credentials)
+    return authAxios.post(this.state.rootPath + '/login', credentials)
       .then(response => {
         var tokens = response.data;
         if (tokens) {
           localStorage.setItem('token', tokens.accessToken);
           localStorage.setItem('refresh_token', tokens.refreshToken);
-          localStorage.setItem('token_type', tokens.tokenType);
           this.setState({ token: tokens.accessToken });
         }
         return response;
@@ -103,11 +85,11 @@ class AppContextProvider extends React.Component {
       <Provider
         value={{
           login: this.login,
-          getArticles: this.getArticles,
-          getArticleById: this.getArticleById,
-          addArticle: this.addArticle,
-          editArticle: this.editArticle,
-          deleteArticle: this.deleteArticle
+          getPosts: this.getPosts,
+          getPostById: this.getPostById,
+          addPost: this.addPost,
+          updatePost: this.updatePost,
+          deletePost: this.deletePost
         }}
       >
         {this.props.children}

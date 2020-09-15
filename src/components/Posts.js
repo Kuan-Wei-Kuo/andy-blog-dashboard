@@ -1,5 +1,6 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
+import { withContext } from '../contexts/AppContext';
 
 import axios from 'axios';
 
@@ -42,10 +43,6 @@ import {
 	Delete as DeleteIcon,
 	Public as PublicIcon
 } from '@material-ui/icons';
-
-import {
-	FormattedDate
-} from 'react-intl';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
 	return <Slide direction="up" ref={ref} {...props} />;
@@ -91,7 +88,7 @@ class Posts extends React.Component {
 	}
 
 	componentDidMount() {
-		axios.get('http://localhost:8080/weblog/priv/api/posts').then(response => {
+		this.props.getPosts().then(response => {
 			let posts = response.data;
 			posts.sort(
 				function (a, b) {
@@ -160,7 +157,7 @@ class Posts extends React.Component {
 	handleDeleteEnter = () => {
 		let { posts, menuPost } = this.state;
 		if (menuPost) {
-			axios.delete('http://localhost:8080/weblog/dash/api/posts/' + menuPost.id).then(response => {
+			this.props.deletePost(menuPost.id).then(response => {
 				for (let i in posts) {
 					let post = posts[i];
 					if (post.id === menuPost.id) {
@@ -169,6 +166,8 @@ class Posts extends React.Component {
 						return;
 					}
 				}
+			}).catch(error => {
+				alert(error.message);
 			});
 		}
 	}
@@ -230,12 +229,7 @@ class Posts extends React.Component {
 															component="span"
 															color="textPrimary"
 														>
-															<FormattedDate
-																value={row.createTime}
-																year="numeric"
-																month="long"
-																day="numeric"
-															/>
+															{row.createTime}
 														</Typography>
 													</div>
 												</React.Fragment>
@@ -334,4 +328,4 @@ class Posts extends React.Component {
 
 }
 
-export default withRouter(withStyles(useStyles)(Posts));
+export default withRouter(withStyles(useStyles)(withContext(Posts)));

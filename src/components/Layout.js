@@ -24,6 +24,7 @@ import { withContext } from '../contexts/AppContext';
 import Posts from './Posts';
 import PostEditor from './PostEditor';
 import Profile from './Profile'; 
+import AuthRoute from './AuthRoute'; 
 
 const drawerWidth = 240;
 
@@ -145,9 +146,10 @@ function Layout(props) {
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <Switch>
-          <Route exact path="/posts" component={Posts}></Route>
-          <Route exact path="/post-editor" component={PostEditor}></Route>
-          <Route exact path="/profile" component={Profile}></Route>
+          <AuthRoute exact path="/posts" component={Posts}></AuthRoute>
+          <AuthRoute exact path="/post-editor" component={PostEditor}></AuthRoute>
+          <AuthRoute exact path="/post-editor/:id" component={PostEditor}></AuthRoute>
+          <AuthRoute exact path="/profile" component={Profile}></AuthRoute>
         </Switch>
       </main>
     </div>

@@ -7,6 +7,7 @@ import { ThemeProvider } from '@material-ui/styles';
 import AppContextProvider from './contexts/AppContextProvider';
 import Login from './components/Login';
 import Layout from './components/Layout';
+import AuthRoute from './components/AuthRoute';
 
 const THEME = createMuiTheme({
   palette: {
@@ -88,7 +89,7 @@ function App() {
         <AppContextProvider>
           <Switch>
             <Route exact path="/login" component={Login}></Route>
-            <Route path="/" component={Layout}></Route>
+            <AuthRoute path="/" component={Layout}></AuthRoute>
           </Switch>
         </AppContextProvider>
       </ThemeProvider>

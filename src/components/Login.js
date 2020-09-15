@@ -1,7 +1,7 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
 
-import { TextField, Typography, Button } from '@material-ui/core';
+import { TextField, Typography, Button, Card, CardContent, CardHeader } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 
 import { withContext } from '../contexts/AppContext';
@@ -15,11 +15,8 @@ const styles = theme => ({
         'justify-content': 'center',
         'flex-direction': 'column'
     },
-    form: {
-        'width': '30%'
-    },
     margin: {
-        margin: theme.spacing(1)
+        marginBottom: theme.spacing(2)
     }
 });
 
@@ -65,45 +62,45 @@ class Login extends React.Component {
         }
         return (
             <div className={classes.wapper}>
-                <div>
-                    <Typography variant="h2" gutterBottom>
-                        AndyBlog
-                    </Typography>
-                </div>
-                <form className={classes.form} onSubmit={this.handleLoginBtnClick}>
-                    <TextField
-                        id="username"
-                        label="Username"
-                        className={classes.margin}
-                        autoComplete="username"
-                        variant="outlined"
-                        color="secondary"
-                        onChange={this.handleUsernameChange}
-                        required
-                        fullWidth
-                    />
-                    <TextField
-                        id="password"
-                        label="Password"
-                        className={classes.margin}
-                        type="password"
-                        autoComplete="current-password"
-                        variant="outlined"
-                        color="secondary"
-                        onChange={this.handlePasswordChange}
-                        required
-                        fullWidth
-                    />
-                    <Button 
-                        type="submit"
-                        variant="contained"
-                        color="secondary" 
-                        className={classes.margin}
-                        fullWidth
-                    >
-                        SIGN IN
+                <Card>
+                    <CardContent >
+                        <Typography variant="h3" align="center" gutterBottom>Andy Blog</Typography>
+                        <form onSubmit={this.handleLoginBtnClick}>
+                            <TextField
+                                id="username"
+                                label="Username"
+                                className={classes.margin}
+                                autoComplete="username"
+                                variant="outlined"
+                                color="primary"
+                                onChange={this.handleUsernameChange}
+                                required
+                                fullWidth
+                            />
+                            <TextField
+                                id="password"
+                                label="Password"
+                                className={classes.margin}
+                                type="password"
+                                autoComplete="current-password"
+                                variant="outlined"
+                                color="primary"
+                                onChange={this.handlePasswordChange}
+                                required
+                                fullWidth
+                            />
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                color="primary"
+                                className={classes.margin}
+                                fullWidth
+                            >
+                                SIGN IN
                     </Button>
-                </form>
+                        </form>
+                    </CardContent>
+                </Card>
             </div>
         );
     }

@@ -1,6 +1,5 @@
 import React from 'react';
-
-import axios from 'axios';
+import { withContext } from '../contexts/AppContext';
 
 import {
     Chip, 
@@ -145,8 +144,8 @@ class PostEditor extends React.Component {
     componentDidMount() {
         let id = this.props.match.params.id;
         if(id) {
-            axios.get('http://localhost:8080/weblog/dash/api/posts/' + id).then(response => {
-                let source = response.data.data;
+            this.props.getPostById(id).then(response => {
+                let source = response.data;
                 this.setState({
                     source: source,
                     title: source.title,
@@ -187,27 +186,10 @@ class PostEditor extends React.Component {
         let id = this.props.match.params.id;
         let { title, chips, code } = this.state;
         let data = { title: title, content: code, categories: chips, publish: false };
-        if(id) {
-            axios.put('http://localhost:8080/weblog/dash/api/posts/' + id, data).then(response => {
-                setTimeout(() => {
-                    let data = response.data;
-                    if(data.statusCode !== 200) {
-                        this.setState({ errorMsg: data.message })
-                    }
-                    this.setState({ saveLoading: false });
-                }, 1500)
-            });
-        } else {
-            axios.post('http://localhost:8080/weblog/dash/api/posts', data).then(response => {
-                setTimeout(() => {
-                    let data = response.data;
-                    if(data.statusCode !== 200) {
-                        this.setState({ errorMsg: data.message })
-                    }
-                    this.setState({ saveLoading: false });
-                }, 1500)
-            });
-        }
+        if(id)
+            this.handleUpdatePost(id, data);
+        else
+            this.handleAddPost(data);
     }
     
     handleSaveAndPublish = () => {
@@ -215,32 +197,30 @@ class PostEditor extends React.Component {
         let id = this.props.match.params.id;
         let { title, chips, code } = this.state;
         let data = { title: title, content: code, categories: chips, publish: true };
-        if(id) {
-            axios.put('http://localhost:8080/weblog/dash/api/posts/' + id, data).then(response => {
-                setTimeout(() => {
-                    let data = response.data;
-                    if(data.statusCode !== 200) {
-                        this.setState({ errorMsg: data.message, saveAndPublishLoading: false });
-                    } else {
-                        this.setState({ saveAndPublishLoading: false });
-                        this.props.history.push('/posts');
-                    }
-                }, 1500)
-            });
-        } else {
-            axios.post('http://localhost:8080/weblog/dash/api/posts', data).then(response => {
-                setTimeout(() => {
-                    let data = response.data;
-                    if(data.statusCode !== 200) {
-                        this.setState({ errorMsg: data.message })
-                        this.setState({ saveAndPublishLoading: false });
-                    } else {
-                        this.setState({ saveAndPublishLoading: false });
-                        this.props.history.push('/posts');
-                    }
-                }, 1500)
-            });
-        }
+        if(id)
+            this.handleUpdatePost(id, data);
+        else
+            this.handleAddPost(data);
+    }
+
+    handleUpdatePost = (id, data) => {
+        this.props.updatePost(id, data).then(() => {
+            this.props.history.go(-1);
+        }).catch(error => {
+            alert(error.message);
+        }).finally(() => {
+            this.setState({ saveLoading: false });
+        });
+    }
+
+    handleAddPost = (data) => {
+        this.props.addPost(data).then(() => {
+            this.props.history.go(-1);
+        }).catch(error => {
+            alert(error.message);
+        }).finally(() => {
+            this.setState({ saveLoading: false });
+        });
     }
 
     handleDialogClose = () => {
@@ -382,4 +362,4 @@ class PostEditor extends React.Component {
 
 }
 
-export default withStyles(styles)(PostEditor);
+export default withStyles(styles)(withContext(PostEditor));
