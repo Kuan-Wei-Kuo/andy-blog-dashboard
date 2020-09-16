@@ -23,8 +23,10 @@ import { makeStyles, useTheme, withStyles } from '@material-ui/core/styles';
 import { withContext } from '../contexts/AppContext';
 import Posts from './Posts';
 import PostEditor from './PostEditor';
-import Profile from './Profile'; 
-import AuthRoute from './AuthRoute'; 
+import Profile from './Profile';
+import AuthRoute from './AuthRoute';
+import { AccountCircle } from '@material-ui/icons';
+import { Avatar, Badge, Button, ClickAwayListener, Grow, Menu, MenuItem, MenuList, Paper, Popper } from '@material-ui/core';
 
 const drawerWidth = 240;
 
@@ -58,6 +60,23 @@ const useStyles = makeStyles((theme) => ({
   content: {
     flexGrow: 1
   },
+  title: {
+    flexGrow: 1,
+  },
+  accountPaper: {
+    padding: theme.spacing(2),
+    textAlign: 'center'
+  },
+  avatarLager: {
+    width: theme.spacing(6),
+    height: theme.spacing(6),
+    border: '1px solid gray',
+    marginBottom: theme.spacing(1)
+  },
+  divider: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(2)
+  }
 }));
 
 function Layout(props) {
@@ -65,6 +84,21 @@ function Layout(props) {
   const classes = useStyles();
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [auth, setAuth] = React.useState(true);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleChange = (event) => {
+    setAuth(event.target.checked);
+  };
+
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -107,9 +141,48 @@ function Layout(props) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap>
+          <Typography variant="h6" className={classes.title} noWrap>
             Write Somthing !
           </Typography>
+          <div>
+            <IconButton
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleMenu}
+              color="inherit"
+            >
+              <AccountCircle />
+            </IconButton>
+            <Popper open={open} anchorEl={anchorEl} role={undefined} transition disablePortal>
+              {({ TransitionProps, placement }) => (
+                <Grow
+                  {...TransitionProps}
+                  style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}
+                >
+                  <Paper className={classes.accountPaper}>
+                    <Badge overlap="circle">
+                      <Avatar className={classes.avatarLager} src="https://avatars3.githubusercontent.com/u/7732396?s=400&u=11266b2bd0aef8df8d7cfe9b30bb68293316dbe0&v=4" />
+                    </Badge>
+                    <Typography variant="subtitle1">
+                      Andy Kuo
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      k.kuanwei@gmail.com
+                    </Typography>
+                    <Divider className={classes.divider} />
+                    <Button onClick={handleClose} variant="outlined" >登出</Button>
+                    {/* <ClickAwayListener onClickAway={handleClose}>
+                      <MenuList autoFocusItem={open} id="menu-list-grow">
+                        <MenuItem onClick={handleClose}>Profile</MenuItem>
+                        <MenuItem onClick={handleClose}>登出帳戶</MenuItem>
+                      </MenuList>
+                    </ClickAwayListener> */}
+                  </Paper>
+                </Grow>
+              )}
+            </Popper>
+          </div>
         </Toolbar>
       </AppBar>
       <nav className={classes.drawer} aria-label="mailbox folders">
